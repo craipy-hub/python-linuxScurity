@@ -15,45 +15,25 @@ python3+Sqlite
 ## 项目文件说明
 
 ├── Check.py
-
 ├── data
-
 │   ├── init.db
-
 │   └── test.db
-
 ├── etc
-
 │   └── pol.txt
-
 ├── Init.py
-
 ├── lib
-
 │   ├── Config.py
-
 │   ├── DBOperateOld.py
-
 │   ├── DBOperate.py
-
 │   ├── Email.py
-
 │   ├── FileOperate.py
-
 │   ├── FormatInfo.py
-
 │   ├── \__init__.py
-
 │   ├── MD5.py
-
 │   ├── MyStat.py
-
 │   └── Policy.py
-
 ├── PrintReport.py
-
 ├── README.md
-
 └── tset.py
 
 data文件夹下存放数据库文件，数据库使用的sqlite
