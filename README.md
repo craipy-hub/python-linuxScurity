@@ -14,7 +14,7 @@ python3+Sqlite
 
 ## 项目文件说明
 
-├── Check.py
+├── Check.py <br>
 ├── data
 │   ├── init.db
 │   └── test.db
