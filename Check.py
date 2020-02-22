@@ -37,13 +37,13 @@ def checkChange(allfile):
                             c.execute(SQLupdate('FILEDB',fdata['PATH'],fdata))
                             flag=0
                             break
-                    # if i in 'CMHS':
-                    #     if a[2]!=fdata['MD5']:
-                    #         print('MD5被修改的文件：', fdata['PATH'])
-                    #         fdata['Record'] = 'm'
-                    #         c.execute(SQLupdate('FILEDB', fdata['PATH'], fdata))
-                    #         flag = 0
-                    #         break
+                    if i in 'CMHS':
+                        if a[2]!=fdata['MD5']:
+                            print('MD5被修改的文件：', fdata['PATH'])
+                            fdata['Record'] = 'm'
+                            c.execute(SQLupdate('FILEDB', fdata['PATH'], fdata))
+                            flag = 0
+                            break
                 if flag:
                     fdata['Record']='c'
                     c.execute(SQLupdate('FILEDB', fdata['PATH'], fdata))
@@ -60,11 +60,11 @@ if __name__ == '__main__':
     print('数据库创建成功')
     connect = sqlite3.connect(checkDBPath)
     c = connect.cursor()
-
     allfile = getDirData()
     checkChange(allfile)
     print(time.time()-now)
     connect.commit()
+    connect.execute("VACUUM")
     c.close()
     connect.close()
 

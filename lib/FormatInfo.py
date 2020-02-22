@@ -1,6 +1,7 @@
 import grp,pwd
 import time
 import stat
+import os
 
 # 根据 stat中查出的组编号,获取组名称
 def linuxGroupInfo(st_gid: int):
@@ -50,3 +51,18 @@ def objectType(mode: int):
         return 'Block special device'
     elif stat.S_ISCHR(mode):
         return 'Character special device'
+
+# Linux下,根据设备号,获取设备名称
+def linuxDeviceToName(no: int):
+    """
+    Linux下,根据设备号,获取设备名称
+    :param no: 设备编号
+    :return: str
+    """
+    for line in open('/proc/partitions'):
+        fields = line.split()
+        if 0 in fields and 1 in fields and 3 in fields \
+                and int(fields[0]) == os.major(no) \
+                and int(fields[1]) == os.minor(no):
+            return fields[3]
+    return 'unKnown'

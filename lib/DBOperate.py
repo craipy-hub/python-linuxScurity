@@ -7,6 +7,11 @@ filedb = {
     'Record' : 'o'
 }
 
+recordmap = {
+    'a':'ADDED',
+    'm':'MODIFIED',
+    'o':'REMOVED'
+}
 def SQLcreatetable(c,tablename):
     try:
         c.execute('''DROP TABLE %s;''' % tablename)
