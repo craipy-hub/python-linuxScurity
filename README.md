@@ -1,40 +1,43 @@
 # python-LinuxSecurity
 ## 描述：
 利用python实现对linux系统文件进行保护。
+
 首先通过Init.py建立初始化数据库，保存系统中文件的inode信息和md5信息
+
 后面利用Check.py检查系统中文件的属性是否更改，文件md5是否变动等信息判断系统文件被改动的部分
+
 分为3类文件
 1. 新增文件
 2. 被修改文件
 3. 被删除文件
 
-环境
+## 环境
 
 python3+Sqlite
 
 ## 项目文件说明
 
-├── Check.py
-├── data
-│   ├── init.db
-│   └── test.db
-├── etc
-│   └── pol.txt
-├── Init.py
-├── lib
-│   ├── Config.py
-│   ├── DBOperateOld.py
-│   ├── DBOperate.py
-│   ├── Email.py
-│   ├── FileOperate.py
-│   ├── FormatInfo.py
-│   ├── \__init__.py
-│   ├── MD5.py
-│   ├── MyStat.py
-│   └── Policy.py
-├── PrintReport.py
-├── README.md
-└── tset.py
+├── Check.py <br>
+├── data <br>
+│   ├── init.db <br>
+│   └── test.db <br>
+├── etc <br>
+│   └── pol.txt <br>
+├── Init.py <br>
+├── lib <br>
+│   ├── Config.py <br>
+│   ├── DBOperateOld.py <br>
+│   ├── DBOperate.py <br>
+│   ├── Email.py <br>
+│   ├── FileOperate.py <br>
+│   ├── FormatInfo.py <br>
+│   ├── \__init__.py <br>
+│   ├── MD5.py <br>
+│   ├── MyStat.py <br>
+│   └── Policy.py <br>
+├── PrintReport.py <br>
+├── README.md <br>
+└── tset.py <br>
 
 data文件夹下存放数据库文件，数据库使用的sqlite
 
