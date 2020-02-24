@@ -17,17 +17,25 @@ def loadPolTxt(path):
 def loadPolVar(txt):
     global config
     globalvartxt = re.compile(r'@@section GLOBAL(.*?)@@section FS')
-    globalvar = globalvartxt.search(txt.replace('\n','')).group(1)
-    varname = re.findall(r'(\w*?)=',globalvar.replace(' ',''))
-    varvalue = re.findall(r'=(.*?);',globalvar.replace(' ',''))
-    for i in range(len(varname)):
-        config[varname[i]] = varvalue[i].replace('\"','')
+    try:
+        globalvar = globalvartxt.search(txt.replace('\n','')).group(1)
+
+        varname = re.findall(r'(\w*?)=',globalvar.replace(' ',''))
+        varvalue = re.findall(r'=(.*?);',globalvar.replace(' ',''))
+        for i in range(len(varname)):
+            config[varname[i]] = varvalue[i].replace('\"','')
+    except:
+        pass
     return config
+
 
 def loadPolRules(txt):
     global Rules
     txt = re.sub('#.*\n', '\n', txt)
-    txt = re.search('@@section FS(.*)',txt,re.S|re.M).group(1)
+    if '@@section FS' in txt:
+        txt = re.search('@@section FS(.*)',txt,re.S|re.M).group(1)
+    else:
+        pass
     # 策略文件中的变量替换
     for globalvar in config:
         txt = txt.replace('$('+globalvar+')',config[globalvar])
@@ -39,7 +47,6 @@ def loadPolRules(txt):
     txt = re.sub('^([\w\/].*?):','"\\1":',txt,flags=re.S|re.M)
     # 字典的value转换
     txt = re.sub(': *?\+(.+?),',':"+\\1",',txt,flags=re.S|re.M)
-
     # 数据分割成列表
     Rules = re.findall('{(.*?)},},',txt,flags=re.S|re.M)
     for i in range(len(Rules)):
@@ -57,6 +64,7 @@ def loadPol():
         try:
             loadPolVar(txt)
             Rules = loadPolRules(txt)
+
             return {'code':200,'msg':'打开文件成功','rules':Rules}
         except:
             return {'code': 1002, 'msg': '文件加载格式失败失败'}
@@ -80,6 +88,18 @@ def checkRules(rulestr:str):
 def setRule(path:str):
     dir = path.split('/')
     pathnew = []
+    for Rule in Rules:
+        RuleContent = Rule['content']
+        for RulePath in RuleContent:
+            if RulePath.startswith('r'):
+                reRule = re.search("r'(.*?)'",RulePath)
+                try:
+                    reRule = reRule.group(1)
+                except:
+                    print('策略文件中正则表达式书写有误->',RulePath)
+                    print('正确书写形式->',"r'/home.*'")
+                if re.search(reRule,path)!=None:
+                    return Rule['rulename'],RuleContent[RulePath]
     for i in range(len(dir)):
         a = '/'
         a = a.join(dir[:i+1])
@@ -94,3 +114,4 @@ def setRule(path:str):
 
 loadPol()
 print('策略文件加载完成')
+# print(Rules)

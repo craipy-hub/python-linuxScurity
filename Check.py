@@ -22,6 +22,7 @@ def checkChange(allfile):
                         print('新增文件：', fdata['PATH'])
                         c.execute(SQLinsert('FILEDB',fdata))
                     else:
+                        fdata['Record'] = 'c'
                         c.execute(SQLinsert('FILEDB', fdata))
 
             else:

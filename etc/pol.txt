@@ -2,7 +2,7 @@
  #                                                                            ##
 ############################################################################## #
 #                                                                            # #
-#                    Tripwire 2.4 policy for Linux (RPM)                     # #
+#                        Python-LinuxSecurity policy(RPM)                    # #
 #                             updated March 2018                             # #
 #                                                                            ##
 ##############################################################################
@@ -20,13 +20,10 @@
 ##############################################################################
 
 @@section GLOBAL
-TWDOCS="/usr/local/tripwire/doc/tripwire";
-TWBIN="/usr/local/tripwire/sbin";
-TWPOL="/usr/local/tripwire/etc";
-TWDB="/usr/local/tripwire/lib/tripwire";
-TWSKEY="/usr/local/tripwire/etc";
-TWLKEY="/usr/local/tripwire/etc";
-TWREPORT="/usr/local/tripwire/lib/tripwire/report";
+LSPROJECT="/home/craipy/Project/ORM-LinuxSecurity";
+LSDB="/home/craipy/Project/ORM-LinuxSecurity/data";
+LSETC="/home/craipy/Project/ORM-LinuxSecurity/etc";
+LSLIB="/home/craipy/Project/ORM-LinuxSecurity/lib";
 HOSTNAME=localhost.localdomain;
 
 ##############################################################################
@@ -81,6 +78,7 @@ SEC_TEMPORARY       = +pugt ;
 # Tripwire Binaries
 (
   rulename = "Tripwire Binaries",
+  severity = 50,
 )
 {
   $(TWBIN)/siggen                      -> $(SEC_READONLY) ;

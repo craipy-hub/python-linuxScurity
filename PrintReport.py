@@ -6,6 +6,9 @@ import sqlite3
 from lib.Host import *
 from lib.DBOperate import recordmap
 import re
+import json
+
+from lib.Email import server,mail_content
 Objects = {}
 RuleHead = ''
 def getReportTxt():
@@ -13,7 +16,6 @@ def getReportTxt():
     with open('data/rp', 'r', encoding='utf-8')as f:
         txt = f.read()
         f.close()
-
     a = re.findall('\(\d-(?P<name>\w+)\)(.*?)\(\d-(?P=name)\)', txt, re.S | re.M)
     for i in a:
         Report[i[0]] = i[1]
@@ -51,6 +53,8 @@ def getData(datapath):
                     row['NEW']['STAT'] = MystatFormated(k[1]).__dict__
                     row['NEW']['MD5'] = k[2]
                 elif j[0]=='o':
+                    row['NEW']['STAT'] = MystatFormated(k[1]).__dict__
+                    row['NEW']['MD5'] = k[2]
                     row['ORIGIN']['STAT'] = MystatFormated(k[1]).__dict__
                     row['ORIGIN']['MD5'] = k[2]
                 Objects[i[0]][j[0]].append(row)
@@ -58,6 +62,8 @@ def getData(datapath):
     connInit.close()
     cCheck.close()
     connCheck.close()
+    # with open('Objects.json','w',encoding='utf-8')as f:
+    #     json.dump(Objects,f,ensure_ascii=False,indent=4)
     return Objects
 
 def getReportSummary(ReportSummary):
@@ -129,9 +135,9 @@ def getChangeDetail(ChangeDetail):
         group = getRuleHead(Rule)
         for i in Objects[Rule]:
             for j in Objects[Rule][i]:
-                ChangeDetail = re.sub('\$\(PATH\)', j['PATH'], ChangeDetail, re.M)
-                ChangeDetail = re.sub('\$\(change\)', recordmap[i], ChangeDetail, re.M)
-                group = group + ChangeDetail
+                ObjectHeader = re.sub('\$\(PATH\)', j['PATH'], ChangeDetail, re.M)
+                ObjectHeader = re.sub('\$\(change\)', recordmap[i], ObjectHeader, re.M)
+                group = group + ObjectHeader
                 for st in j['NEW']['STAT']:
                     if i =='m':
                         row = '  '+st.ljust(21,' ')+\
@@ -153,10 +159,10 @@ def getChangeDetail(ChangeDetail):
                 elif i == 'a':
                     row = '  ' + 'MD5'.ljust(21, ' ') + \
                           '---'.ljust(35, ' ') + \
-                          j['NEW']['MD5'][st].ljust(35, ' ') + '\n'
+                          j['NEW']['MD5'].ljust(35, ' ') + '\n'
                 elif i == 'o':
                     row = '  ' + 'MD5'.ljust(21, ' ') + \
-                          j['ORIGIN']['MD5'][st].ljust(35, ' ') + \
+                          j['ORIGIN']['MD5'].ljust(35, ' ') + \
                           '---'.ljust(35, ' ') + '\n'
                 group = group + row
         ChangeDetails = ChangeDetails + group
@@ -176,7 +182,7 @@ def printReport(output_file):
     with open(output_file,'w',encoding='utf-8')as f:
         f.write(ReportTxt)
         f.close()
-    print(ReportTxt)
+    # return ReportTxt
 if __name__ == '__main__':
     # opts, args = getopt.getopt(sys.argv[1:], "hi:o:")
     # input_file = ""
@@ -203,3 +209,10 @@ if __name__ == '__main__':
     output_file = dataDir + '/test.txt'
     Objects = getData(input_file)
     printReport(output_file)
+
+    if os.stat(output_file).st_size>1024*1024*5:
+        mail_content['content_text'] = '有较多的文件被修改，请尽快登陆服务器查看报告'
+        server.send_mail(['cpy_3566@163.com'], mail_content)
+    else:
+        mail_content['attachments'].append(output_file)
+        server.send_mail(['cpy_3566@163.com'], mail_content)

@@ -12,7 +12,7 @@ def collectFileData(fdata:dict):
     try:
         STAT = os.stat(fdata['PATH'], follow_symlinks=False)
         fdata['STAT'] = str(STAT).replace('os.st_result', '')
-        fdata['MD5'] = getMD5(fdata['PATH'], fdata['Rule_Check'], STAT.st_mode)
+        # fdata['MD5'] = getMD5(fdata['PATH'], fdata['Rule_Check'], STAT.st_mode)
         return fdata
     except Exception as e:
         print(e)

@@ -13,5 +13,5 @@ initDB_Path = os.path.join(dataDir,'init.db')
 etcDir = os.path.join(ProjectDir,'etc')
 
 # 配置文件路径
-policyPath = os.path.join(etcDir,'pol.txt')
+policyPath = os.path.join(etcDir,'pol1.txt')
 

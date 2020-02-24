@@ -1,0 +1,14 @@
+(
+  rulename = "Filetest",
+  severity = 50,
+)
+{
+    /       -> +pugsdrintbamc ;
+}
+(
+  rulename = "Filetest1",
+  severity = 20,
+)
+{
+    r'/home.*'       -> +pugsdrintbamc ;
+}
