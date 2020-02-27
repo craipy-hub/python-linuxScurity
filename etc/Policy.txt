@@ -1,0 +1,348 @@
+# tripwire policy file
+
+@@section GLOBAL
+TWROOT=/usr/sbin;
+TWBIN=/usr/sbin;
+TWPOL="/etc/tripwire";
+TWDB="/var/lib/tripwire";
+TWSKEY="/etc/tripwire";
+TWLKEY="/etc/tripwire";
+TWREPORT="/var/lib/tripwire/report";
+
+# Define variables for policy classifications
+ReadOnly	   	= +pinugtsdbmCM-rlacSH;
+Dynamic	   	    = +pinugtd-srlbancCMSH;	   	#Directories that change often.
+Growing	   	    = +pinugtdl-srbamcCMSH;	   	#For files that get larger with time.
+Device	   	    = +pubsdr-intlbamcCMSH;	   	#For device files that shouldn't be opened.
+IgnoreAll	   	= -pinugtsdrlbamcCMSH;	   	#Check nothing
+IgnoreNone	   	= +pinugtsdrlbamcCMSH-l;	   	#Check everything except the "growing" property.
+
+SEC_CRIT      = +pinugtsdrlbamcCMSH-l-SHa ;  # Critical files that cannot change
+SEC_SUID      = +pinugtsdrlbamcCMSH-l-SHa ;  # Binaries with the SUID or SGID flags set
+SEC_BIN       = +pinugtsdbmCM-rlacSH;        # Binaries that should not change
+SEC_CONFIG    = +pinugtd-srlbancCMSH;         # Config files that are changed infrequently but accessed often
+SEC_LOG       = +pinugtdl-srbamcCMSH;         # Files that grow, but that should never change ownership
+SEC_INVARIANT = +tpug ;              # Directories that should never change permission or ownership
+SIG_LOW       = 33 ;                 # Non-critical files that are of minimal security impact
+SIG_MED       = 66 ;                 # Non-critical files that are of significant security impact
+SIG_HI        = 100 ;                # Critical files that are significant points of vulnerability@@section FS
+@@section FS
+# Protect tripwire itself.  The binaries and config files should not normally
+# change.  The database is read often but seldom changes.  The inode
+# is removed because backup files are created.
+
+(
+  rulename = "Tripwire Binaries",
+  severity = $(SIG_HI),
+)
+{
+  $(TWBIN)/siggen                      -> $(SEC_BIN) ;
+  $(TWBIN)/tripwire                    -> $(SEC_BIN) ;
+  $(TWBIN)/twadmin                     -> $(SEC_BIN) ;
+  $(TWBIN)/twprint                     -> $(SEC_BIN) ;
+}
+
+(
+  rulename = "Tripwire Data Files",
+  severity = $(SIG_HI),
+)
+{
+
+  $(TWDB)                              -> $(SEC_CONFIG) -i ;
+  $(TWPOL)/tw.pol                      -> $(SEC_BIN) -i ;
+  $(TWPOL)/tw.cfg                      -> $(SEC_BIN) -i ;
+  $(TWLKEY)/$(HOSTNAME)-local.key      -> $(SEC_BIN) ;
+  $(TWSKEY)/site.key                   -> $(SEC_BIN) ;
+
+  $(TWREPORT)                          -> $(SEC_CONFIG);
+
+# Directories that shouldn't change.
+
+(
+  rulename = "Invariant Directories",
+  severity = $(SIG_MED),
+)
+{
+  /                                    -> $(SEC_INVARIANT);
+  /home                                -> $(SEC_INVARIANT);
+  /etc                                 -> $(SEC_INVARIANT);
+}
+
+# Programs that normally wouldn't change.
+
+
+(
+  rulename = "File System and Disk Administraton Programs",
+  severity = $(SIG_HI),
+)
+{
+  /sbin/accton                         -> $(SEC_CRIT) ;
+  /sbin/badblocks                      -> $(SEC_CRIT) ;
+  /sbin/dosfsck                        -> $(SEC_CRIT) ;
+  /sbin/debugfs                        -> $(SEC_CRIT) ;
+  /sbin/debugreiserfs                  -> $(SEC_CRIT) ;
+  /sbin/dumpe2fs                       -> $(SEC_CRIT) ;
+     .
+     .
+  /bin/mktemp                          -> $(SEC_CRIT) ;
+  /bin/rm                              -> $(SEC_CRIT) ;
+  /bin/rmdir                           -> $(SEC_CRIT) ;
+
+
+(
+  rulename = "Kernel Administration Programs",
+  severity = $(SIG_HI),
+)
+{
+  /sbin/adjtimex                       -> $(SEC_CRIT) ;
+  /sbin/ctrlaltdel                     -> $(SEC_CRIT) ;
+  /sbin/depmod                         -> $(SEC_CRIT) ;
+     .
+     .
+  /sbin/modinfo                        -> $(SEC_CRIT) ;
+  /sbin/sysctl                         -> $(SEC_CRIT) ;
+}
+
+
+
+(
+  rulename = "Networking Programs",
+  severity = $(SIG_HI),
+)
+{
+  /etc/sysconfig/network-scripts/ifdown                  -> $(SEC_CRIT) ;
+  /etc/sysconfig/network-scripts/ifdown-cipcb            -> $(SEC_CRIT) ;
+  /etc/sysconfig/network-scripts/ifdown-ipv6             -> $(SEC_CRIT) ;
+     .
+     .
+  /sbin/ypbind                         -> $(SEC_CRIT) ;
+  /bin/ping                            -> $(SEC_CRIT) ;
+}
+
+
+(
+  rulename = "System Administration Programs",
+  severity = $(SIG_HI),
+)
+{
+  /sbin/chkconfig                      -> $(SEC_CRIT) ;
+  /sbin/fuser                          -> $(SEC_CRIT) ;
+     .
+     .
+  /bin/pwd                             -> $(SEC_CRIT) ;
+  /bin/uname                           -> $(SEC_CRIT) ;
+}
+
+
+(
+  rulename = "Operating System Utilities",
+  severity = $(SIG_HI),
+)
+{
+  /bin/arch                            -> $(SEC_CRIT) ;
+  /bin/ash                             -> $(SEC_CRIT) ;
+     .
+     .
+  /bin/cut                             -> $(SEC_CRIT) ;
+  /bin/date                            -> $(SEC_CRIT) ;
+}
+
+
+(
+  rulename = "Temporary directories",
+  recurse = false,
+  severity = $(SIG_LOW),
+)
+{
+  /usr/tmp                             -> $(SEC_INVARIANT) ;
+  /var/tmp                             -> $(SEC_INVARIANT) ;
+  /tmp                                 -> $(SEC_INVARIANT) ;
+}
+
+(
+  rulename = "User binaries",
+  severity = $(SIG_MED),
+)
+{
+  /sbin                                -> $(SEC_BIN);
+  /usr/local/bin                       -> $(SEC_BIN);
+  /usr/sbin                            -> $(SEC_BIN);
+  /usr/bin                             -> $(SEC_BIN);
+}
+
+(
+  rulename = "Shell Binaries",
+  severity = $(SIG_HI),
+)
+{
+  /bin/ksh                             -> $(SEC_BIN) ;
+  /bin/sh                              -> $(SEC_BIN) ;
+  /bin/bash                            -> $(SEC_BIN) ;
+  /bin/tcsh                            -> $(SEC_BIN) ;
+}
+
+# Control files directly related to security
+
+(
+  rulename = "Security Control",
+  severity = $(SIG_HI),
+)
+{
+  /etc/group                           -> $(SEC_CRIT) ;
+  /etc/security                        -> $(SEC_CRIT) ;
+}
+
+
+# Insure that the basic login scripts don't change.
+
+(
+  rulename = "Login Scripts",
+  severity = $(SIG_HI),
+)
+{
+  /etc/csh.cshrc                       -> $(SEC_CONFIG) ;
+  /etc/csh.login                       -> $(SEC_CONFIG) ;
+  # /etc/tsh_profile                     -> $(SEC_CONFIG) ; #Uncomment when this file exists
+  /etc/profile                         -> $(SEC_CONFIG) ;
+}
+
+# Libraries
+
+(
+  rulename = "Libraries",
+  severity = $(SIG_MED),
+)
+{
+  /usr/lib                             -> $(SEC_BIN) ;
+  /usr/local/lib                       -> $(SEC_BIN) ;
+}
+
+# Watch for changes in the boot files.
+
+(
+  rulename = "Critical system boot files",
+  severity = $(SIG_HI),
+)
+{
+     /boot                             -> $(SEC_CRIT) ;
+     /sbin/devfsd                      -> $(SEC_CRIT) ;
+     /sbin/installkernel               -> $(SEC_CRIT) ;
+     /sbin/lilo                        -> $(SEC_CRIT) ;
+     !/boot/System.map ;
+     !/boot/module-info ;
+
+     # other boot files may exist.  Look for:
+     #/ufsboot                          -> $(SEC_CRIT) ;
+}
+
+(
+  rulename = "System boot changes",
+  severity = $(SIG_HI),
+)
+{
+     !/var/run/ftp.pids-all ; # Comes and goes on reboot.
+     !/root/.enlightenment ;
+     /dev/log                          -> $(SEC_CONFIG) ;
+     /dev/cua0                         -> $(SEC_CONFIG) ;
+     /dev/tty1                         -> $(SEC_CONFIG) ; # tty devices
+     /dev/tty2                         -> $(SEC_CONFIG) ; # tty devices
+     /dev/tty6                         -> $(SEC_CONFIG) ;
+         .
+         .
+     /var/lock/subsys/smb              -> $(SEC_CONFIG) ;
+     /var/lock/subsys/snmpd            -> $(SEC_CONFIG) ;
+     /var/lock/subsys/sound            -> $(SEC_CONFIG) ;
+     /var/lock/subsys/squid            -> $(SEC_CONFIG) ;
+}
+
+
+(
+  rulename = "Root config files",
+  severity = 100,
+)
+{
+     /root                             -> $(SEC_CRIT) ; # Additions to /root
+     /root/mail                        -> $(SEC_CONFIG) ;
+     /root/Mail                        -> $(SEC_CONFIG) ;
+     /root/.xsession-errors            -> $(SEC_CONFIG) ;
+     /root/.xauth                      -> $(SEC_CONFIG) ;
+        .
+        .
+     /root/.ICEauthority               -> $(SEC_CONFIG) ;
+}
+
+
+
+(
+  rulename = "Critical configuration files",
+  severity = $(SIG_HI),
+)
+{
+     /etc/conf.linuxconf               -> $(SEC_BIN) ;
+     /etc/crontab                      -> $(SEC_BIN) ;
+     /etc/cron.hourly                  -> $(SEC_BIN) ;
+     /etc/cron.daily                   -> $(SEC_BIN) ;
+     /etc/cron.weekly                  -> $(SEC_BIN) ;
+     /etc/cron.monthly                 -> $(SEC_BIN) ;
+     /etc/default                      -> $(SEC_BIN) ;
+     /etc/fstab                        -> $(SEC_BIN) ;
+     /etc/exports                      -> $(SEC_BIN) ;
+     /etc/group-                       -> $(SEC_BIN) ;  # changes should be infrequent
+     /etc/host.conf                    -> $(SEC_BIN) ;
+     /etc/hosts.allow                  -> $(SEC_BIN) ;
+     /etc/hosts.deny                   -> $(SEC_BIN) ;
+     /etc/httpd/conf                   -> $(SEC_BIN) ;  # changes should be infrequent
+     /etc/protocols                    -> $(SEC_BIN) ;
+     /etc/services                     -> $(SEC_BIN) ;
+     /etc/rc.d/init.d                  -> $(SEC_BIN) ;
+     /etc/rc.d                         -> $(SEC_BIN) ;
+     /etc/mail.rc                      -> $(SEC_BIN) ;
+     /etc/modules.conf                 -> $(SEC_BIN) ;
+     /etc/motd                         -> $(SEC_BIN) ;
+     /etc/named.conf                   -> $(SEC_BIN) ;
+     /etc/passwd                       -> $(SEC_CONFIG) ;
+     /etc/passwd-                      -> $(SEC_CONFIG) ;
+     /etc/profile.d                    -> $(SEC_BIN) ;
+     /var/lib/nfs/rmtab                -> $(SEC_BIN) ;
+     /usr/sbin/fixrmtab                -> $(SEC_BIN) ;
+     /etc/rpc                          -> $(SEC_BIN) ;
+     /etc/sysconfig                    -> $(SEC_BIN) ;
+     /etc/samba/smb.conf               -> $(SEC_CONFIG) ;
+     /etc/gettydefs                    -> $(SEC_BIN) ;
+     /etc/nsswitch.conf                -> $(SEC_BIN) ;
+     /etc/yp.conf                      -> $(SEC_BIN) ;
+     /etc/hosts                        -> $(SEC_CONFIG) ;
+     /etc/xinetd.conf                  -> $(SEC_CONFIG) ;
+     /etc/inittab                      -> $(SEC_CONFIG) ;
+     /etc/resolv.conf                  -> $(SEC_CONFIG) ;
+     /etc/syslog.conf                  -> $(SEC_CONFIG) ;
+}
+
+
+(
+  rulename = "Critical devices",
+  severity = $(SIG_HI),
+  recurse = false,
+)
+{
+     /dev/kmem                         -> $(Device) ;
+     /dev/mem                          -> $(Device) ;
+     /dev/null                         -> $(Device) ;
+     /dev/zero                         -> $(Device) ;
+     /proc/devices                     -> $(Device) ;
+     /proc/net                         -> $(Device) ;
+        .
+        .
+     /proc/cmdline                     -> $(Device) ;
+     /proc/misc                        -> $(Device) ;
+}
+
+
+(
+  rulename = "OS executables and libraries",
+  severity = $(SIG_HI),
+)
+{
+     /bin                              -> $(SEC_BIN) ;
+     /lib                              -> $(SEC_BIN) ;
+}

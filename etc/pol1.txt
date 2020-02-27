@@ -1,14 +1,175 @@
+@@section GLOBAL
+LSPROJECT="/home/craipy/Project/ORM-LinuxSecurity";
+LSDB="/home/craipy/Project/ORM-LinuxSecurity/data";
+LSETC="/home/craipy/Project/ORM-LinuxSecurity/etc";
+LSLIB="/home/craipy/Project/ORM-LinuxSecurity/lib";
+
+##############################################################################
+#  Predefined Variables                                                      #
+##############################################################################
+#
+#  Property Masks
+#
+#  -  ignore the following properties
+#  +  check the following properties
+#
+#  a  access timestamp (mutually exclusive with +M)   a
+#  c  inode creation/modification timestamp     c
+#  d  ID of device on which inode resides       d
+#  g  group id of owner     g
+#  i  inode number      i
+#  l  growing files (logfiles for example)
+#  m  modification timestamp    m
+#  n  number of links   n
+#  p  permission and file mode bits     p
+#  s  file size     s
+#  t  file type     t
+#  u  user id of owner      u
+#  M  MD5 hash      M
+#
+##############################################################################
+
+SEC_DEVICE        = +pugsd-intlamcM ;
+SEC_DYNAMIC       = +pinugtd-srlamcM ;
+SEC_GROWING       = +pinugtdl-sramcM ;
+SEC_IGNORE_ALL    = -pinugtsdlamcM ;
+SEC_IGNORE_NONE    = +pinugtsdamcM-l ;
+SEC_READONLY      = +pinugtsdmM-lac ;
+SEC_TEMPORARY       = +pugt ;
+
+@@section FS
+
+# 系统运行时调用，会导致新增文件，也可能会随时删除，修改
 (
-  rulename = "Filetest",
+  rulename = "System Run Call",
   severity = 50,
 )
 {
-    /       -> +pugsdrintbamc ;
+    !/run;
+    !/proc;
+    !/sys;
 }
+
+# 全局配置文件，一般不会被修改，但是会经常被访问，程序运行时可能会加载配置
 (
-  rulename = "Filetest1",
-  severity = 20,
+  rulename = "Global Configuration Files",
+  severity = 50,
 )
 {
-    r'/home.*'       -> +pugsdrintbamc ;
+  /etc                           -> $(SEC_IGNORE_NONE) -a ;
+  /etc/adjtime                   -> $(SEC_DYNAMIC) ;
+  /etc/aliases.db                -> $(SEC_DYNAMIC) ;
+  /etc/bashrc                    -> $(SEC_DYNAMIC) ;
+  /etc/csh.cshrc                 -> $(SEC_DYNAMIC) ;
+  /etc/csh.login                 -> $(SEC_DYNAMIC) ;
+  /etc/mail/statistics           -> $(SEC_GROWING) ;
+  /etc/profile                   -> $(SEC_DYNAMIC) -i ;
+  /etc/mtab                      -> $(SEC_DYNAMIC) -i ;
+  /etc/rc.d                      -> $(SEC_IGNORE_NONE) -a ;
+  /etc/sysconfig                 -> $(SEC_IGNORE_NONE) -a ;
+  /etc/sysconfig/hwconf          -> $(SEC_DYNAMIC) -m ;
 }
+
+#系统设备和杂项文件
+(
+  rulename = "OS Devices and Misc Directories",
+)
+{
+  /dev                          -> $(SEC_DEVICE) ;
+  /initrd                       -> $(SEC_DYNAMIC) ;
+  /opt                          -> $(SEC_DYNAMIC) ;
+  /lost+found                   -> $(SEC_DYNAMIC) ;
+  /var/lost+found               -> $(SEC_DYNAMIC) ;
+  /home/lost+found              -> $(SEC_DYNAMIC) ;
+  !/dev/pts ;			 # Ignore this file
+  !/dev/shm ;			 # Ignore this file
+}
+#系统启动文件和挂载点文件
+(
+  rulename = "OS Boot Files and Mount Points",
+)
+{
+  /boot                         -> $(SEC_READONLY) ;
+  /cdrom                        -> $(SEC_DYNAMIC) ;
+  /floppy                       -> $(SEC_DYNAMIC) ;
+  /mnt                          -> $(SEC_DYNAMIC) ;
+}
+#系统的二进制文件和库
+(
+  rulename = "OS Binaries and Libraries",
+)
+{
+  /bin                          -> $(SEC_READONLY) ;
+  /lib                          -> $(SEC_READONLY) ;
+  /sbin                         -> $(SEC_READONLY) ;
+  r'/usr.*?/bin.*'              -> $(SEC_READONLY) ;
+  r'/usr.*?/sbin.*'             -> $(SEC_READONLY) ;
+  /usr/libexec                  -> $(SEC_READONLY) ;
+  r'/usr.*?/lib.*'              -> $(SEC_READONLY) ;
+}
+
+#用户安装的二进制文件和库
+(
+  rulename = "User Binaries and Libraries",
+)
+{
+  !/home/local;
+  /usr/local                    -> $(SEC_READONLY) ;
+  /usr/local/bin                -> $(SEC_READONLY) ;
+  /usr/local/doc                -> $(SEC_READONLY) ;
+  /usr/local/etc                -> $(SEC_READONLY) ;
+  /usr/local/games              -> $(SEC_READONLY) ;
+  /usr/local/include            -> $(SEC_READONLY) ;
+  /usr/local/lib                -> $(SEC_READONLY) ;
+  /usr/local/libexec            -> $(SEC_READONLY) ;
+  /usr/local/man                -> $(SEC_READONLY) ;
+  /usr/local/sbin               -> $(SEC_READONLY) ;
+  /usr/local/share              -> $(SEC_READONLY) ;
+  /usr/local/src                -> $(SEC_READONLY) ;
+  /usr/local/sysinfo            -> $(SEC_READONLY) ;
+}
+
+(
+  rulename = "Monitor Filesystems",
+)
+{
+  /                             -> $(SEC_READONLY) ;
+  /home                         -> $(SEC_READONLY) ;  # Modify as needed
+  /usr                          -> $(SEC_READONLY) ;
+  /var                          -> $(SEC_READONLY) ;
+}
+
+(
+  rulename = "Temporary Directories",
+)
+{
+  /usr/tmp                      -> $(SEC_TEMPORARY) ;
+  /var/tmp                      -> $(SEC_TEMPORARY) ;
+  /tmp                          -> $(SEC_TEMPORARY) ;
+  #/tmp/.fam-socket              -> $(SEC_TEMPORARY) ;
+  #/tmp/.ICE-unix                -> $(SEC_TEMPORARY) ;
+  #/tmp/.X11-unix                -> $(SEC_TEMPORARY) ;
+  !/tmp/orbit-root ;
+}
+
+(
+  rulename = "System Boot Changes",
+)
+{
+  /.autofsck                    -> $(SEC_DYNAMIC) -m ;
+  /var/cache/man/whatis         -> $(SEC_GROWING) ;
+  /var/lib/logrotate.status     -> $(SEC_GROWING) ;
+  #/var/lib/nfs/statd            -> $(SEC_GROWING) ;
+  !/var/lib/random-seed ;
+  #/var/lib/slocate/slocate.db    -> $(SEC_GROWING) -is ;
+  /var/lock/subsys                -> $(SEC_DYNAMIC) -i ;
+  /var/log                        -> $(SEC_GROWING) -i ;
+  !/var/log/sa;
+  !/var/log/cisco;
+  /var/run                        -> $(SEC_DYNAMIC) -i ;
+  /etc/cron.daily                 -> $(SEC_GROWING);
+  /etc/cron.weekly                -> $(SEC_GROWING);
+  /etc/cron.monthly               -> $(SEC_GROWING);
+  /var/spool/mail                 -> $(SEC_GROWING);
+}
+
