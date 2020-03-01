@@ -19,7 +19,6 @@ def loadPolVar(txt):
     globalvartxt = re.compile(r'@@section GLOBAL(.*?)@@section FS')
     try:
         globalvar = globalvartxt.search(txt.replace('\n','')).group(1)
-
         varname = re.findall(r'(\w*?)=',globalvar.replace(' ',''))
         varvalue = re.findall(r'=(.*?);',globalvar.replace(' ',''))
         for i in range(len(varname)):

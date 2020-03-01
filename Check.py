@@ -4,6 +4,7 @@ from lib.DBOperate import *
 from lib.Policy import setRule
 from lib.FileOperate import *
 from lib.MyStat import *
+from PrintReport import pReport
 import time
 
 def checkChange(allfile):
@@ -28,32 +29,37 @@ def checkChange(allfile):
             else:
                 flag = 1
                 fdata = collectFileData(fdata)
-                originStat = Mystat(a[1]).__dict__      #获取原始的stat
-                newStat = Mystat(fdata['STAT']).__dict__        #刚获取的stat
-                for i in fdata['Rule_Check']:
-                    if i in StatMap:
-                        if originStat[StatMap[i]]!=newStat[StatMap[i]]:
-                            print('被修改的文件：',fdata['PATH'])
-                            fdata['Record']='m'
-                            c.execute(SQLupdate('FILEDB',fdata['PATH'],fdata))
-                            flag=0
-                            break
-                    if i in 'CMHS':
-                        if a[2]!=fdata['MD5']:
-                            print('MD5被修改的文件：', fdata['PATH'])
-                            fdata['Record'] = 'm'
-                            c.execute(SQLupdate('FILEDB', fdata['PATH'], fdata))
-                            flag = 0
-                            break
-                if flag:
-                    fdata['Record']='c'
-                    c.execute(SQLupdate('FILEDB', fdata['PATH'], fdata))
+                if not fdata==None:
+                    originStat = Mystat(a[1]).__dict__      #获取原始的stat
+                    newStat = Mystat(fdata['STAT']).__dict__        #刚获取的stat
+                    for i in fdata['Rule_Check']:
+                        if i in StatMap:
+                            if originStat[StatMap[i]]!=newStat[StatMap[i]]:
+                                print('被修改的文件：',fdata['PATH'])
+                                fdata['Record']='m'
+                                c.execute(SQLupdate('FILEDB',fdata['PATH'],fdata))
+                                flag=0
+                                break
+                        if i in 'CMHS':
+                            if a[2]!=fdata['MD5']:
+                                print('MD5被修改的文件：', fdata['PATH'])
+                                fdata['Record'] = 'm'
+                                c.execute(SQLupdate('FILEDB', fdata['PATH'], fdata))
+                                flag = 0
+                                break
+                    if flag:
+                        fdata['Record']='c'
+                        c.execute(SQLupdate('FILEDB', fdata['PATH'], fdata))
     SQLQuery = "DELETE FROM FILEDB WHERE Record='c'"
     c.execute(SQLQuery)
 
 if __name__ == '__main__':
     now = time.time()
-    checkDBPath = dataDir+'/test.db'
+    checkDBName = formatTime(now)+'.db'
+    checkTxtName = formatTime(now)+'.txt'
+    checkDBPath = os.path.join(dataDir,checkDBName)
+    checkTxtPath = os.path.join(dataDir,checkTxtName)
+
     if os.path.exists(checkDBPath):
         os.remove(checkDBPath)
     cpcmd = 'cp '+ initDB_Path +' '+checkDBPath
@@ -68,4 +74,6 @@ if __name__ == '__main__':
     connect.execute("VACUUM")
     c.close()
     connect.close()
+    pReport(checkDBPath,checkTxtPath)
+
 

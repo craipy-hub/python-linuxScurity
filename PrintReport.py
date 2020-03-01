@@ -183,6 +183,18 @@ def printReport(output_file):
         f.write(ReportTxt)
         f.close()
     # return ReportTxt
+def sendReport(output_file):
+    if os.stat(output_file).st_size>1024*1024*5:
+        mail_content['content_text'] = '有较多的文件被修改，请尽快登陆服务器查看报告'
+        server.send_mail(['cpy_3566@163.com'], mail_content)
+    else:
+        mail_content['attachments'].append(output_file)
+        server.send_mail(['cpy_3566@163.com'], mail_content)
+
+def pReport(input,out):
+    getData(input)
+    printReport(out)
+    sendReport(out)
 if __name__ == '__main__':
     # opts, args = getopt.getopt(sys.argv[1:], "hi:o:")
     # input_file = ""

@@ -15,6 +15,19 @@ def calFileMd5(filepath:str):
     a_file.close()
     return m.hexdigest()
 
+def calBigFileMd5(filename:str):
+    if not os.path.isfile(filename):
+        return ''
+    myhash = md5()
+    f = open(filename,'rb')
+    while True:
+        b = f.read(8096)
+        if not b :
+            break
+        myhash.update(b)
+    f.close()
+    return myhash.hexdigest()
+
 def getMD5(path:str,Rule:str,mode):
     if path.startswith('/dev') or path.startswith('/sys') or path.startswith('/proc'):
         return ''
@@ -22,5 +35,5 @@ def getMD5(path:str,Rule:str,mode):
         return ''
     for i in 'CSHM':
         if i in Rule:
-            return calFileMd5(path)
+            return calBigFileMd5(path)
     return ''
