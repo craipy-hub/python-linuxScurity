@@ -10,12 +10,12 @@ TWLKEY="/etc/tripwire";
 TWREPORT="/var/lib/tripwire/report";
 
 # Define variables for policy classifications
-ReadOnly	   	= +pinugtsdbmCM-rlacSH;
-Dynamic	   	    = +pinugtd-srlbancCMSH;	   	#Directories that change often.
-Growing	   	    = +pinugtdl-srbamcCMSH;	   	#For files that get larger with time.
-Device	   	    = +pubsdr-intlbamcCMSH;	   	#For device files that shouldn't be opened.
-IgnoreAll	   	= -pinugtsdrlbamcCMSH;	   	#Check nothing
-IgnoreNone	   	= +pinugtsdrlbamcCMSH-l;	   	#Check everything except the "growing" property.
+ReadOnly      = +pinugtsdbmCM-rlacSH;
+Dynamic       = +pinugtd-srlbancCMSH;	   	#Directories that change often.
+Growing       = +pinugtdl-srbamcCMSH;	   	#For files that get larger with time.
+Device   = +pubsdr-intlbamcCMSH;	   	#For device files that shouldn't be opened.
+IgnoreAll     = -pinugtsdrlbamcCMSH;	   	#Check nothing
+IgnoreNone    = +pinugtsdrlbamcCMSH-l;	   	#Check everything except the "growing" property.
 
 SEC_CRIT      = +pinugtsdrlbamcCMSH-l-SHa ;  # Critical files that cannot change
 SEC_SUID      = +pinugtsdrlbamcCMSH-l-SHa ;  # Binaries with the SUID or SGID flags set
@@ -33,7 +33,7 @@ SIG_HI        = 100 ;                # Critical files that are significant point
 
 (
   rulename = "Tripwire Binaries",
-  severity = $(SIG_HI),
+  severity = $(SIG_HI)
 )
 {
   $(TWBIN)/siggen                      -> $(SEC_BIN) ;
@@ -44,23 +44,22 @@ SIG_HI        = 100 ;                # Critical files that are significant point
 
 (
   rulename = "Tripwire Data Files",
-  severity = $(SIG_HI),
+  severity = $(SIG_HI)
 )
 {
 
   $(TWDB)                              -> $(SEC_CONFIG) -i ;
   $(TWPOL)/tw.pol                      -> $(SEC_BIN) -i ;
   $(TWPOL)/tw.cfg                      -> $(SEC_BIN) -i ;
-  $(TWLKEY)/$(HOSTNAME)-local.key      -> $(SEC_BIN) ;
   $(TWSKEY)/site.key                   -> $(SEC_BIN) ;
 
   $(TWREPORT)                          -> $(SEC_CONFIG);
-
+}
 # Directories that shouldn't change.
 
 (
   rulename = "Invariant Directories",
-  severity = $(SIG_MED),
+  severity = $(SIG_MED)
 )
 {
   /                                    -> $(SEC_INVARIANT);
@@ -73,7 +72,7 @@ SIG_HI        = 100 ;                # Critical files that are significant point
 
 (
   rulename = "File System and Disk Administraton Programs",
-  severity = $(SIG_HI),
+  severity = $(SIG_HI)
 )
 {
   /sbin/accton                         -> $(SEC_CRIT) ;
@@ -82,23 +81,19 @@ SIG_HI        = 100 ;                # Critical files that are significant point
   /sbin/debugfs                        -> $(SEC_CRIT) ;
   /sbin/debugreiserfs                  -> $(SEC_CRIT) ;
   /sbin/dumpe2fs                       -> $(SEC_CRIT) ;
-     .
-     .
   /bin/mktemp                          -> $(SEC_CRIT) ;
   /bin/rm                              -> $(SEC_CRIT) ;
   /bin/rmdir                           -> $(SEC_CRIT) ;
-
+}
 
 (
   rulename = "Kernel Administration Programs",
-  severity = $(SIG_HI),
+  severity = $(SIG_HI)
 )
 {
   /sbin/adjtimex                       -> $(SEC_CRIT) ;
   /sbin/ctrlaltdel                     -> $(SEC_CRIT) ;
   /sbin/depmod                         -> $(SEC_CRIT) ;
-     .
-     .
   /sbin/modinfo                        -> $(SEC_CRIT) ;
   /sbin/sysctl                         -> $(SEC_CRIT) ;
 }
@@ -107,14 +102,12 @@ SIG_HI        = 100 ;                # Critical files that are significant point
 
 (
   rulename = "Networking Programs",
-  severity = $(SIG_HI),
+  severity = $(SIG_HI)
 )
 {
   /etc/sysconfig/network-scripts/ifdown                  -> $(SEC_CRIT) ;
   /etc/sysconfig/network-scripts/ifdown-cipcb            -> $(SEC_CRIT) ;
   /etc/sysconfig/network-scripts/ifdown-ipv6             -> $(SEC_CRIT) ;
-     .
-     .
   /sbin/ypbind                         -> $(SEC_CRIT) ;
   /bin/ping                            -> $(SEC_CRIT) ;
 }
@@ -122,13 +115,11 @@ SIG_HI        = 100 ;                # Critical files that are significant point
 
 (
   rulename = "System Administration Programs",
-  severity = $(SIG_HI),
+  severity = $(SIG_HI)
 )
 {
   /sbin/chkconfig                      -> $(SEC_CRIT) ;
   /sbin/fuser                          -> $(SEC_CRIT) ;
-     .
-     .
   /bin/pwd                             -> $(SEC_CRIT) ;
   /bin/uname                           -> $(SEC_CRIT) ;
 }
@@ -136,13 +127,11 @@ SIG_HI        = 100 ;                # Critical files that are significant point
 
 (
   rulename = "Operating System Utilities",
-  severity = $(SIG_HI),
+  severity = $(SIG_HI)
 )
 {
   /bin/arch                            -> $(SEC_CRIT) ;
   /bin/ash                             -> $(SEC_CRIT) ;
-     .
-     .
   /bin/cut                             -> $(SEC_CRIT) ;
   /bin/date                            -> $(SEC_CRIT) ;
 }
@@ -151,7 +140,7 @@ SIG_HI        = 100 ;                # Critical files that are significant point
 (
   rulename = "Temporary directories",
   recurse = false,
-  severity = $(SIG_LOW),
+  severity = $(SIG_LOW)
 )
 {
   /usr/tmp                             -> $(SEC_INVARIANT) ;
@@ -161,7 +150,7 @@ SIG_HI        = 100 ;                # Critical files that are significant point
 
 (
   rulename = "User binaries",
-  severity = $(SIG_MED),
+  severity = $(SIG_MED)
 )
 {
   /sbin                                -> $(SEC_BIN);
@@ -172,7 +161,7 @@ SIG_HI        = 100 ;                # Critical files that are significant point
 
 (
   rulename = "Shell Binaries",
-  severity = $(SIG_HI),
+  severity = $(SIG_HI)
 )
 {
   /bin/ksh                             -> $(SEC_BIN) ;
@@ -185,7 +174,7 @@ SIG_HI        = 100 ;                # Critical files that are significant point
 
 (
   rulename = "Security Control",
-  severity = $(SIG_HI),
+  severity = $(SIG_HI)
 )
 {
   /etc/group                           -> $(SEC_CRIT) ;
@@ -197,7 +186,7 @@ SIG_HI        = 100 ;                # Critical files that are significant point
 
 (
   rulename = "Login Scripts",
-  severity = $(SIG_HI),
+  severity = $(SIG_HI)
 )
 {
   /etc/csh.cshrc                       -> $(SEC_CONFIG) ;
@@ -210,7 +199,7 @@ SIG_HI        = 100 ;                # Critical files that are significant point
 
 (
   rulename = "Libraries",
-  severity = $(SIG_MED),
+  severity = $(SIG_MED)
 )
 {
   /usr/lib                             -> $(SEC_BIN) ;
@@ -221,7 +210,7 @@ SIG_HI        = 100 ;                # Critical files that are significant point
 
 (
   rulename = "Critical system boot files",
-  severity = $(SIG_HI),
+  severity = $(SIG_HI)
 )
 {
      /boot                             -> $(SEC_CRIT) ;
@@ -237,7 +226,7 @@ SIG_HI        = 100 ;                # Critical files that are significant point
 
 (
   rulename = "System boot changes",
-  severity = $(SIG_HI),
+  severity = $(SIG_HI)
 )
 {
      !/var/run/ftp.pids-all ; # Comes and goes on reboot.
@@ -247,8 +236,6 @@ SIG_HI        = 100 ;                # Critical files that are significant point
      /dev/tty1                         -> $(SEC_CONFIG) ; # tty devices
      /dev/tty2                         -> $(SEC_CONFIG) ; # tty devices
      /dev/tty6                         -> $(SEC_CONFIG) ;
-         .
-         .
      /var/lock/subsys/smb              -> $(SEC_CONFIG) ;
      /var/lock/subsys/snmpd            -> $(SEC_CONFIG) ;
      /var/lock/subsys/sound            -> $(SEC_CONFIG) ;
@@ -266,8 +253,6 @@ SIG_HI        = 100 ;                # Critical files that are significant point
      /root/Mail                        -> $(SEC_CONFIG) ;
      /root/.xsession-errors            -> $(SEC_CONFIG) ;
      /root/.xauth                      -> $(SEC_CONFIG) ;
-        .
-        .
      /root/.ICEauthority               -> $(SEC_CONFIG) ;
 }
 
@@ -275,7 +260,7 @@ SIG_HI        = 100 ;                # Critical files that are significant point
 
 (
   rulename = "Critical configuration files",
-  severity = $(SIG_HI),
+  severity = $(SIG_HI)
 )
 {
      /etc/conf.linuxconf               -> $(SEC_BIN) ;
@@ -322,7 +307,7 @@ SIG_HI        = 100 ;                # Critical files that are significant point
 (
   rulename = "Critical devices",
   severity = $(SIG_HI),
-  recurse = false,
+  recurse = false
 )
 {
      /dev/kmem                         -> $(Device) ;
@@ -331,8 +316,6 @@ SIG_HI        = 100 ;                # Critical files that are significant point
      /dev/zero                         -> $(Device) ;
      /proc/devices                     -> $(Device) ;
      /proc/net                         -> $(Device) ;
-        .
-        .
      /proc/cmdline                     -> $(Device) ;
      /proc/misc                        -> $(Device) ;
 }
@@ -340,7 +323,7 @@ SIG_HI        = 100 ;                # Critical files that are significant point
 
 (
   rulename = "OS executables and libraries",
-  severity = $(SIG_HI),
+  severity = $(SIG_HI)
 )
 {
      /bin                              -> $(SEC_BIN) ;

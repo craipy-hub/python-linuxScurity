@@ -78,7 +78,7 @@ SEC_TEMPORARY       = +pugt ;
 # Tripwire Binaries
 (
   rulename = "Tripwire Binaries",
-  severity = 50,
+  severity = 50
 )
 {
   $(TWBIN)/siggen                      -> $(SEC_READONLY) ;
